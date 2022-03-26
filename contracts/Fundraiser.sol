@@ -11,10 +11,10 @@ contract Fundraiser is ERC721URIStorage {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
     uint256 private fundId;
+    string private fundName;
     address payable private fundOwner;
     uint256 private supply;
     uint256 private basePrice;
-    string constant BASE_FUND_SYMBOL = "FUR";
     bool private isOpenning;
 
     string private baseURI;
@@ -23,14 +23,15 @@ contract Fundraiser is ERC721URIStorage {
     event Withdraw(uint256 amount);
 
     constructor(
-        string memory name,
+        string memory _fundName,
         uint256 _fundId,
         uint256 _supply,
         uint256 _basePrice,
         string memory pBaseURI
-    ) ERC721(name, BASE_FUND_SYMBOL) {
+    ) ERC721("Fund Token", "FUR") {
         isOpenning = true;
         fundId = _fundId;
+        fundName = _fundName;
         fundOwner = payable(msg.sender);
         supply = _supply;
         basePrice = _basePrice;
