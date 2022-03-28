@@ -5,10 +5,13 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract Fundraiser is ERC721URIStorage {
 
     using Counters for Counters.Counter;
+    using Strings for uint256;
+
     Counters.Counter private _tokenIds;
     uint256 private fundId;
     string private fundName;
@@ -39,7 +42,6 @@ contract Fundraiser is ERC721URIStorage {
     }
 
     function fund() public payable returns (uint256) {
-        checkEnding();
         require(isOpenning);
         uint256 amount = msg.value;
         require(amount >= basePrice);
@@ -49,7 +51,9 @@ contract Fundraiser is ERC721URIStorage {
 
         address funder = msg.sender;
         _safeMint(funder, newTokenId);
+        _setTokenURI(newTokenId, newTokenId.toString());
 
+        checkEnding();
         emit Fund(funder, amount, newTokenId);
 
         return newTokenId;
@@ -90,6 +94,10 @@ contract Fundraiser is ERC721URIStorage {
 
     function getFundId() public view returns (uint256){
         return fundId;
+    }
+
+        function getFundName() public view returns (string memory){
+        return fundName;
     }
 
     function getFundOwner() public view returns (address) {
