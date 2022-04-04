@@ -104,7 +104,7 @@ contract Fundraiser is ERC721URIStorage {
     }
 
     function getFundOwner() public view returns (address) {
-        return address(fundOwner);
+        return fundOwner;
     }
 
      function getSupply() public view returns (uint256){

@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 contract FundManager {
 
     using Counters for Counters.Counter;
-    Counters.Counter private fundIds;
+    Counters.Counter private fundCounter;
     mapping(uint256 => address) private fundList;
     event CreateFund(address owner, uint256 fundId);
 
@@ -18,8 +18,8 @@ contract FundManager {
         uint256 basePrice, 
         string memory baseURI) public returns (uint256) {
 
-        fundIds.increment();
-        uint256 newFundId = fundIds.current();
+        fundCounter.increment();
+        uint256 newFundId = fundCounter.current();
         address fundOwner = msg.sender;
 
         Fundraiser fund = new Fundraiser(fundOwner, name, newFundId, supply, basePrice, baseURI);
@@ -32,6 +32,10 @@ contract FundManager {
 
     function getFund(uint256 fundId) public view returns (address) {
         return fundList[fundId];
+    }
+
+    function getFundCounter() public view returns (uint256) {
+        return fundCounter.current();
     }
 
 }
