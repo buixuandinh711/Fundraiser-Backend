@@ -75,13 +75,13 @@ contract Fundraiser is ERC721URIStorage {
 
 
     modifier onlyOwner {
-        require(msg.sender == address(fundOwner));
+        require(msg.sender == fundOwner, "Not the owner!");
         _;
     }
 
 
     function checkEnding() private {
-        if (_tokenIds.current() == supply) {
+        if (isOpenning &&  _tokenIds.current() == supply) {
             isOpenning = false;
             emit EndFunding();
         }

@@ -1,5 +1,6 @@
 const { expect } = require("chai");
-const { ethers } = require("hardhat");
+const hre = require("hardhat");
+const ehters = hre.ethers;
 
 describe("Fundraiser test", function () {
 
@@ -14,6 +15,11 @@ describe("Fundraiser test", function () {
    const INIT_TOKEN_COUNTER = 0;
 
    before(async function () {
+
+      const networkName = hre.network.name;
+        if (networkName != "hardhat") {
+            this.skip();
+      }
 
       [owner, funder] = await ethers.getSigners();
       const Fundraiser = await ethers.getContractFactory("Fundraiser");
@@ -50,7 +56,7 @@ describe("Fundraiser test", function () {
       const sendAmount = basePrice;
       const fundTx = await fundraiser.connect(funder).fund({ value: sendAmount });
       const receipt =  await fundTx.wait();
-      const newTokenId = receipt.events[0].args.tokenId;
+      const newTokenId = receipt.events[1].args.tokenId;
 
       expect(newTokenId.gt(initTokenCounter)).to.be.true;
 
