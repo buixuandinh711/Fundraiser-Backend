@@ -10,6 +10,7 @@ contract FundManager {
     using Counters for Counters.Counter;
     Counters.Counter private fundIds;
     mapping(uint256 => address) private fundList;
+    event CreateFund(address owner, uint256 fundId);
 
     function createFund(
         string memory name, 
@@ -19,9 +20,11 @@ contract FundManager {
 
         fundIds.increment();
         uint256 newFundId = fundIds.current();
+        address fundOwner = msg.sender;
 
-        Fundraiser fund = new Fundraiser(name, newFundId, supply, basePrice, baseURI);
+        Fundraiser fund = new Fundraiser(fundOwner, name, newFundId, supply, basePrice, baseURI);
         fundList[newFundId] = address(fund);
+        emit CreateFund(fundOwner, newFundId);
 
         return newFundId;
 

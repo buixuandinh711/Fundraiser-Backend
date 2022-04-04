@@ -1,7 +1,7 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe("Fundraiser test", function() {
+describe("Fundraiser test", function () {
 
    let fundraiser;
    let owner, funder;
@@ -13,16 +13,17 @@ describe("Fundraiser test", function() {
    const baseURI = "ipfs://afdsf32sfaf/";
    const INIT_TOKEN_COUNTER = 0;
 
-   before (async function() {
+   before(async function () {
 
-      [owner, funder ] = await ethers.getSigners();
+      [owner, funder] = await ethers.getSigners();
       const Fundraiser = await ethers.getContractFactory("Fundraiser");
-      fundraiser = await Fundraiser.connect(owner).deploy(fundName, fundId, fundSupply, basePrice, baseURI);
+      fundraiser = await Fundraiser.connect(owner)
+         .deploy(owner.address, fundName, fundId, fundSupply, basePrice, baseURI);
       await fundraiser.deployed();
 
    })
 
-   it ("Should be return the true initial value", async function() {
+   it("Should be return the true initial value", async function () {
 
       const name = await fundraiser.getFundName();
       expect(name).to.be.equal(fundName);
@@ -41,36 +42,41 @@ describe("Fundraiser test", function() {
 
    })
 
-   it ("Should create a new fund token", async function() {
+   it("Should create a new fund token", async function () {
 
-      const beforeTokenCounter = await fundraiser.getTokenCounter();
+      const initTokenCounter = await fundraiser.getTokenCounter();
 
-      
+
       const sendAmount = basePrice;
-      const fundTx = await fundraiser.connect(funder).fund({value : sendAmount});
+      const fundTx = await fundraiser.connect(funder).fund({ value: sendAmount });
+      const receipt =  await fundTx.wait();
+      const newTokenId = receipt.events[0].args.tokenId;
 
-      await fundTx.wait();
-      const afterTokenCounter = await fundraiser.getTokenCounter();
+      expect(newTokenId.gt(initTokenCounter)).to.be.true;
 
-      expect(afterTokenCounter - beforeTokenCounter).to.be.equal(1);
-
-      const tokenOwner = await fundraiser.ownerOf(afterTokenCounter);
+      const tokenOwner = await fundraiser.ownerOf(newTokenId);
       expect(tokenOwner).to.be.equal(funder.address);
 
-      const uri = await fundraiser.tokenURI(afterTokenCounter);
-      expect(uri).to.be.equal(baseURI + afterTokenCounter);
+      const uri = await fundraiser.tokenURI(newTokenId);
+      expect(uri).to.be.equal(baseURI + newTokenId);
 
    })
 
-   it ("Should make Fundraiser to ended state", async function() {
+   it("Should make Fundraiser to ended state", async function () {
       const sendAmount = basePrice;
-      const fundTx = await fundraiser.connect(funder).fund({value : sendAmount});
+      const fundTx = await fundraiser.connect(funder).fund({ value: sendAmount });
       await fundTx.wait();
       const openState = await fundraiser.getFundOpenState();
       expect(openState).to.be.false;
    })
 
-   it ("Should withdraw funded amount", async function() {
+   it("Shouldn't fund anymore after fund closed", async function () {
+      const sendAmount = basePrice;
+      await expect(fundraiser.connect(funder).fund({ value: sendAmount }))
+         .to.be.revertedWith("This fundraiser is ended!");
+   })
+
+   it("Should withdraw funded amount", async function () {
 
       const beforeOwnerBalance = await owner.getBalance();
       const withdrawTx = await fundraiser.withdraw();
