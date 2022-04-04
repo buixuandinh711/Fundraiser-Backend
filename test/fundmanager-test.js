@@ -1,4 +1,5 @@
-const { ethers } = require("hardhat");
+const hre = require("hardhat");
+const ehters = hre.ethers;
 const { expect } = require("chai");
 
 describe("FundManager test", function () {
@@ -11,6 +12,11 @@ describe("FundManager test", function () {
     const fundBaseUri = "ipfs://abcxyz123";
 
     before(async function () {
+        const networkName = hre.network.name;
+        if (networkName != "hardhat") {
+            this.skip();
+        }
+
         [, fundCreator] = await ethers.getSigners();
         const FundManager = await ethers.getContractFactory("FundManager");
         fundManager = await FundManager.deploy();
