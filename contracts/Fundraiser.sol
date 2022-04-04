@@ -15,7 +15,7 @@ contract Fundraiser is ERC721URIStorage {
     Counters.Counter private _tokenIds;
     uint256 private fundId;
     string private fundName;
-    address payable private fundOwner;
+    address private fundOwner;
     uint256 private supply;
     uint256 private basePrice;
     bool private isOpenning;
@@ -24,25 +24,27 @@ contract Fundraiser is ERC721URIStorage {
 
     event Fund(address funder, uint256 totalSent, uint256 tokenId);
     event Withdraw(uint256 amount);
+    event EndFunding();
 
     constructor(
+        address _fundOwner,
         string memory _fundName,
         uint256 _fundId,
         uint256 _supply,
         uint256 _basePrice,
         string memory pBaseURI
     ) ERC721("Fund Token", "FUR") {
-        isOpenning = true;
+        fundOwner = _fundOwner;
         fundId = _fundId;
         fundName = _fundName;
-        fundOwner = payable(msg.sender);
         supply = _supply;
         basePrice = _basePrice;
         baseURI = pBaseURI;
+        isOpenning = true;
     }
 
     function fund() public payable returns (uint256) {
-        require(isOpenning);
+        require(isOpenning, "This fundraiser is ended!");
         uint256 amount = msg.value;
         require(amount >= basePrice);
 
@@ -62,13 +64,13 @@ contract Fundraiser is ERC721URIStorage {
 
     function withdraw() public payable onlyOwner {
         checkEnding();
-        require(!isOpenning);
+        require(!isOpenning, "This fundraiser is't ended!");
 
         uint256 contractBalance = address(this).balance;
 
         emit Withdraw(contractBalance);
 
-        fundOwner.transfer(contractBalance);
+        payable(fundOwner).transfer(contractBalance);
     }
 
 
@@ -81,6 +83,7 @@ contract Fundraiser is ERC721URIStorage {
     function checkEnding() private {
         if (_tokenIds.current() == supply) {
             isOpenning = false;
+            emit EndFunding();
         }
     }
 
