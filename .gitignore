@@ -4,6 +4,10 @@ coverage
 coverage.json
 typechain
 scripts/demo.js
+deployments/FundManager.json
+scripts/sample-scripts.js
+test/sample-test.js 
+contract/Greeter.sol
 
 #Hardhat files
 cache
