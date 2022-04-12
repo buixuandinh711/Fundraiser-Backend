@@ -6,8 +6,11 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
-contract Fundraiser is ERC721URIStorage {
+contract Fundraiser is ERC721URIStorage, Initializable {
+
+    bool private isBase;
 
     using Counters for Counters.Counter;
     using Strings for uint256;
@@ -26,14 +29,20 @@ contract Fundraiser is ERC721URIStorage {
     event Withdraw(uint256 amount);
     event EndFunding();
 
-    constructor(
+    constructor() ERC721("Fund Token", "FUR") {
+        isBase = true;
+    }
+
+    function initialize(
         address _fundOwner,
         string memory _fundName,
         uint256 _fundId,
         uint256 _supply,
         uint256 _basePrice,
         string memory pBaseURI
-    ) ERC721("Fund Token", "FUR") {
+    ) public initializer {
+        // This line is commented for testing contract only
+        //require(!isBase, "The base contract can not be reinitialize!");
         fundOwner = _fundOwner;
         fundId = _fundId;
         fundName = _fundName;
@@ -72,7 +81,6 @@ contract Fundraiser is ERC721URIStorage {
 
         payable(fundOwner).transfer(contractBalance);
     }
-
 
     modifier onlyOwner {
         require(msg.sender == fundOwner, "Not the owner!");
@@ -117,6 +125,14 @@ contract Fundraiser is ERC721URIStorage {
 
     function getTokenCounter() public view returns (uint256) {
         return _tokenIds.current();        
+    }
+
+    function name() public view virtual override returns (string memory) {
+        return "Fund Token";
+    }
+
+    function symbol() public view virtual override returns (string memory) {
+        return "FUR";
     }
 
 

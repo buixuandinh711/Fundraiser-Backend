@@ -4,13 +4,21 @@ pragma solidity ^0.8.0;
 
 import "./Fundraiser.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/proxy/Clones.sol";
 
 contract FundManager {
+
+    address private baseFundraiserAddress;
 
     using Counters for Counters.Counter;
     Counters.Counter private fundCounter;
     mapping(uint256 => address) private fundList;
     event CreateFund(address owner, uint256 fundId);
+
+    constructor() {
+        Fundraiser fundraiser = new Fundraiser();
+        baseFundraiserAddress = address(fundraiser);
+    }
 
     function createFund(
         string memory name, 
@@ -22,8 +30,9 @@ contract FundManager {
         uint256 newFundId = fundCounter.current();
         address fundOwner = msg.sender;
 
-        Fundraiser fund = new Fundraiser(fundOwner, name, newFundId, supply, basePrice, baseURI);
-        fundList[newFundId] = address(fund);
+        address fundraiserAddress = Clones.clone(baseFundraiserAddress);
+        Fundraiser(fundraiserAddress).initialize(fundOwner, name, newFundId, supply, basePrice, baseURI);
+        fundList[newFundId] = fundraiserAddress;
         emit CreateFund(fundOwner, newFundId);
 
         return newFundId;

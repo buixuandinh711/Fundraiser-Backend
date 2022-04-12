@@ -1,6 +1,6 @@
 const { expect } = require("chai");
 const hre = require("hardhat");
-const ehters = hre.ethers;
+const ethers = hre.ethers;
 
 describe("Fundraiser test", function () {
 
@@ -23,8 +23,9 @@ describe("Fundraiser test", function () {
 
       [owner, funder] = await ethers.getSigners();
       const Fundraiser = await ethers.getContractFactory("Fundraiser");
-      fundraiser = await Fundraiser.connect(owner)
-         .deploy(owner.address, fundName, fundId, fundSupply, basePrice, baseURI);
+      fundraiser = await Fundraiser.connect(owner).deploy();
+      const initTx = await fundraiser.initialize(owner.address, fundName, fundId, fundSupply, basePrice, baseURI);
+      await initTx.wait();
       await fundraiser.deployed();
 
    })
